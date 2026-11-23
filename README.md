@@ -160,7 +160,7 @@ python -m rag_pipeline.ingestion.embedder
 streamlit run app.py
 
 # 3. Tests du chunker et de l'embedder
-pytest rag_pipeline/tests
+python -m pytest rag_pipeline/tests -v
 
 # 4. Évaluation du retrieval (sans LLM)
 python -m rag_pipeline.evaluation.run_eval --embedder voyage_code_4 --no-generation --split dev --label dev_voyage
