@@ -134,8 +134,8 @@ Même prompt, même modèle et même configuration entre dev et test pour la gé
 **Prérequis :** Python 3.11, [Ollama](https://ollama.com), une clé Voyage AI et une clé Gemini (offres gratuites suffisantes).
 
 ```bash
-git clone https://github.com/slmxx/Rag_for_Repo_Files.git
-cd Rag_for_Repo_Files
+git clone https://github.com/slmxx/Rag_Code.git
+cd Rag_Code
 python -m venv .venv
 .venv\Scripts\activate            # Linux / macOS : source .venv/bin/activate
 pip install -r requirements.txt
