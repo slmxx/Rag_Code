@@ -4,7 +4,7 @@ Petit cache clé -> JSON sur disque (SQLite). Sert à ne jamais repayer un appel
 la même question avec les mêmes extraits redonne la même réponse, sans nouvel appel.
 """
 from __future__ import annotations
-
+import threading
 import hashlib
 import json
 import sqlite3
@@ -18,7 +18,8 @@ class JsonCache:
     def __init__(self, name: str):
         cache_dir = Path(getattr(config, "CACHE_DIR", config.PROJECT_ROOT / ".embedding_cache"))
         cache_dir.mkdir(parents=True, exist_ok=True)
-        self._db = sqlite3.connect(str(cache_dir / f"{name}.sqlite3"))
+        self._lock = threading.Lock()
+        self._db = sqlite3.connect(str(cache_dir / f"{name}.sqlite3"), check_same_thread=False)
         self._db.execute("CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
         self._db.commit()
 
@@ -28,9 +29,11 @@ class JsonCache:
         return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
     def get(self, key: str) -> Any | None:
-        row = self._db.execute("SELECT value FROM kv WHERE key = ?", (key,)).fetchone()
+        with self._lock:
+            row = self._db.execute("SELECT value FROM kv WHERE key = ?", (key,)).fetchone()
         return json.loads(row[0]) if row else None
 
     def put(self, key: str, value: Any) -> None:
-        self._db.execute("INSERT OR REPLACE INTO kv VALUES (?, ?)", (key, json.dumps(value, ensure_ascii=False)))
-        self._db.commit()
+        with self._lock:
+            self._db.execute("INSERT OR REPLACE INTO kv VALUES (?, ?)", (key, json.dumps(value, ensure_ascii=False)))
+            self._db.commit()
