@@ -1,0 +1,177 @@
+id,type,split,question,retrieval_s,generation_s,total_s,generation_failed,answer,retrieved_paths,hit@5,recall@5,mrr
+q01,architecture,dev,"Sur quels ports tournent l'API Gateway, l'auth-service et le service de découverte Eureka ?",0.048,112.873,112.921,False,"L'API Gateway tourne sur le port 8080, l'auth-service sur le port 8081 et le service de découverte Eureka sur le port 8761.",CLAUDE.md ; CLAUDE.md ; auth-service/src/main/java/com/ecommerce/auth_service/config/OpenAPIConfig.java ; README.md ; CLAUDE.md,1.0,1.0,1.0
+q03,architecture,dev,Quelles étapes et quels scans de sécurité la CI GitHub Actions exécute-t-elle ?,0.025,258.387,258.412,False,"La CI GitHub Actions exécute les étapes suivantes :
+
+1. Checkout (extrait 4) : Cette étape permet de récupérer le code source du référentiel.
+
+2. Prepare environment file (extrait 4) : Cette étape copie le fichier `.env.ci` dans `.env`.
+
+3. Build and start full stack (extrait 4) : Cette étape permet de construire et de démarrer l'ensemble du stack (toutes les microservices et les bases de données).
+
+4. Wait for API Gateway to be ready (extrait 4) : Cette étape attend que l'API Gateway soit prête.
+
+5. Prepare ZAP workspace (extrait 4) : Cette étape prépare l'espace de travail de ZAP.
+
+6. Run OWASP ZAP Baseline Scan (extrait 4) : Cette étape exécute le scan de sécurité OWASP ZAP en mode basse ligne (pas de scan actif). Le scan cible l'API Gateway uniquement.
+
+7. Upload ZAP Report (extrait 4) : Cette étape upload le rapport de scan de sécurité de ZAP.
+
+8. Tear down stack (extrait 4) : Cette étape arrête et supprime l'ensemble du stack.
+
+En plus de ceux-ci, la CI GitHub Actions exécute également des scans de sécurité statique pour le code source (CodeQL pour Java et TypeScript, `npm audit` pour les dépendances frontend) et des scans de sécurité des images de conteneurs avec Trivy (extrait 5).",docs/DISCUSSIONS.md ; docs/DISCUSSIONS.md ; docs/DISCUSSIONS.md ; .github/workflows/dast.yml ; .github/workflows/ci.yml,1.0,1.0,0.2
+q05,architecture,dev,"Quelles commandes permettent de lancer les tests d'un seul service Java, d'une seule classe et d'une seule méthode ?",0.043,225.709,225.752,False,"Les commandes pour lancer les tests d'un seul service Java, d'une seule classe et d'une seule méthode sont les suivantes :
+
+- Pour le service `order-service`, dans le répertoire `order-service` :
+
+  - Lancer tous les tests : `./mvnw test`
+  - Lancer un seul test class : `./mvnw test -Dtest=ClassName`
+  - Lancer un seul test method : `./mvnw test -Dtest=ClassName#methodName`
+
+- Pour le service `api-gateway`, dans le répertoire `api-gateway` :
+
+  - Lancer tous les tests : `./mvnw test`
+  - Lancer un seul test class : `./mvnw test -Dtest=ClassName`
+  - Lancer un seul test method : `./mvnw test -Dtest=ClassName#methodName`
+
+- Pour le frontend, dans le répertoire `frontend` :
+
+  - Lancer tous les tests unitaires : `npm test`
+  - Lancer un seul test spécifique : `npm test -- --include='**/foo.spec.ts'`",order-service/src/test/java/com/ecommerce/order_service/controller/OrderControllerTest.java ; frontend/README.md ; order-service/src/test/java/com/ecommerce/order_service/service/OrderServiceTest.java ; CLAUDE.md ; api-gateway/src/test/java/com/ecommerce/api_gateway/client/OrderClientCircuitBreakerTest.java,1.0,1.0,0.25
+q06,architecture,dev,"Quel chemin suit une requête de navigation dans le catalogue, du navigateur jusqu'à la base de données ?",0.037,178.895,178.932,False,"La requête de navigation dans le catalogue suit le chemin suivant du navigateur jusqu'à la base de données :
+
+Frontend (8087) → API Gateway (8080) → Product Service (8083) → MongoDB",CLAUDE.md ; README.md ; frontend/e2e/products.spec.ts ; order-service/src/main/java/com/ecommerce/order_service/service/OrderService.java ; order-service/src/main/java/com/ecommerce/order_service/service/OrderService.java,1.0,1.0,1.0
+q08,code,dev,Où est calculé le total d'une commande et d'où viennent les prix utilisés ?,0.023,150.767,150.79,False,Le total d'une commande est calculé dans le fichier `api-gateway/src/main/java/com/ecommerce/api_gateway/controller/CartGraphQLController.java` dans la méthode `getTotalPrice`. Les prix utilisés viennent des produits récupérés à partir du service `product-service` via l'appel à la méthode `productClient.getProductsByIds(ids)`.,api-gateway/src/main/java/com/ecommerce/api_gateway/controller/CartGraphQLController.java ; order-service/src/main/java/com/ecommerce/order_service/service/OrderService.java ; order-service/src/main/java/com/ecommerce/order_service/service/OrderService.java ; order-service/src/main/java/com/ecommerce/order_service/model/Order.java ; order-service/src/main/java/com/ecommerce/order_service/service/OrderService.java,1.0,1.0,0.5
+q10,code,dev,Que se passe-t-il si le vidage du panier échoue après l'enregistrement de la commande ?,0.02,137.29,137.31,False,Le contexte fourni ne contient pas cette information.,order-service/src/main/java/com/ecommerce/order_service/service/OrderService.java ; order-service/src/main/java/com/ecommerce/order_service/service/OrderService.java ; frontend/src/app/components/checkout/checkout.ts ; order-service/src/main/java/com/ecommerce/order_service/client/CartClientFallback.java ; frontend/e2e/cart.spec.ts,1.0,1.0,1.0
+q11,code,dev,"Combien de tentatives le listener RabbitMQ du notification-service fait-il avant d'abandonner, et avec quels délais ?",0.036,179.746,179.782,False,"Le listener RabbitMQ du notification-service fait 3 tentatives avant d'abandonner, avec des délais de 3 secondes pour la première tentative, 10 secondes pour la deuxième et 19 secondes pour la troisième (3 tentatives × 10 secondes). Cependant, dans le contexte du test DlqIntegrationTest, les délais sont réduits à 100ms pour la première tentative et 200ms pour la deuxième.",notification-service/src/main/java/com/ecommerce/notification_service/config/RabbitMQConfig.java ; notification-service/src/main/java/com/ecommerce/notification_service/consumer/DeadLetterConsumer.java ; notification-service/src/test/java/com/ecommerce/notification_service/DlqIntegrationTest.java ; order-service/src/main/java/com/ecommerce/order_service/config/RabbitMQConfig.java ; notification-service/src/main/resources/application.yaml,1.0,1.0,0.2
+q13,code,dev,Comment le cart-service empêche-t-il un utilisateur d'accéder au panier d'un autre ?,0.021,195.445,195.466,False,"Le cart-service empêche un utilisateur d'accéder au panier d'un autre en utilisant une méthode de validation d'ownership (propriété) dans le contrôleur CartController. Lorsque l'utilisateur tente d'accéder à son panier ou de modifier ses produits, la méthode `authenticatedUserId()` est appelée pour récupérer l'ID de l'utilisateur authentifié. La méthode `validateOwnership(userId, authenticatedId)` est ensuite appelée pour vérifier que l'ID de l'utilisateur authentifié correspond à l'ID de l'utilisateur pour lequel l'accès est demandé. Si les ID ne correspondent pas, une exception est lancée avec un statut HTTP 403 (Accès interdit).
+
+Le code pertinent se trouve dans les extraits 2 et 3.
+
+```java
+private Mono<String> authenticatedUserId() {
+    return ReactiveSecurityContextHolder.getContext()
+            .map(ctx -> ctx.getAuthentication().getName())
+            .switchIfEmpty(Mono.error(new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED, ""Authentication required"")));
+}
+
+private void validateOwnership(String userId, String authenticatedId) {
+    if (!authenticatedId.equals(userId)) {
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                ""Access denied: cart belongs to a different user"");
+    }
+}
+```",docs/DISCUSSIONS.md ; cart-service/src/main/java/com/ecommerce/cart_service/controller/CartController.java ; cart-service/src/main/java/com/ecommerce/cart_service/controller/CartController.java ; api-gateway/src/main/java/com/ecommerce/api_gateway/client/CartClient.java ; cart-service/src/main/java/com/ecommerce/cart_service/model/Cart.java,1.0,1.0,0.5
+q14,code,dev,Combien de temps un panier est-il conservé dans Redis ?,0.021,93.841,93.863,False,Le panier est conservé dans Redis pendant 604800 secondes (une semaine).,cart-service/src/main/java/com/ecommerce/cart_service/model/Cart.java ; README.md ; cart-service/src/main/java/com/ecommerce/cart_service/config/RedisConfig.java ; CLAUDE.md ; docs/DISCUSSIONS.md,1.0,1.0,1.0
+q16,code,dev,Comment le login est-il délégué à Keycloak et quelle erreur est renvoyée quand le compte est verrouillé ?,0.023,150.369,150.391,False,"Le login est délégué à Keycloak via l'API de génération de token, qui est appelée dans la méthode `generateToken()` de la classe `AuthService`. Lorsque le compte est verrouillé, Keycloak renvoie une erreur 4xx (erreur du client) à la méthode `generateToken()`, qui est gérée par l'appel à `onStatus(4xx)`. Cette méthode appelle ensuite la méthode `isAccountLocked()` pour vérifier si le compte est verrouillé, et si c'est le cas, elle renvoie une erreur `ResponseStatusException` avec le message ""Your account has been temporarily locked due to too many failed login attempts. Please try again later."".",docs/DISCUSSIONS.md ; auth-service/src/main/java/com/ecommerce/auth_service/service/AuthService.java ; auth-service/src/main/java/com/ecommerce/auth_service/service/AuthService.java ; docs/DISCUSSIONS.md ; frontend/e2e/helpers/auth.ts,1.0,1.0,0.5
+q18,code,dev,Quelles routes de la gateway sont accessibles sans authentification et lesquelles exigent le rôle ADMIN ?,0.019,199.543,199.562,False,"Les routes de la gateway accessibles sans authentification sont :
+
+- `/auth/login`
+- `/auth/register`
+- `/auth/refresh`
+- `/graphiql/**`
+- `/graphql/**`
+- `/public/**`
+- `/actuator/health`
+- `/actuator/**` (si le rôle ADMIN est spécifié)
+- `/api/products/**` (si le type de requête est GET)
+- `/swagger-ui/**`, `/swagger-ui.html`, `/v3/api-docs/**`, `/webjars/**` (toutes les routes pour Swagger UI et API Docs)
+
+Les routes exigeant le rôle ADMIN sont :
+
+- `/api/admin/**`
+- `/actuator/**` (si le rôle ADMIN n'est pas spécifié pour `/actuator/health`)",api-gateway/src/main/java/com/ecommerce/api_gateway/config/SecurityConfig.java ; frontend/src/app/app.routes.ts ; api-gateway/src/main/java/com/ecommerce/api_gateway/config/RoutesConfig.java ; order-service/src/main/java/com/ecommerce/order_service/controller/OrderController.java ; cart-service/src/main/java/com/ecommerce/cart_service/config/SecurityConfig.java,1.0,1.0,1.0
+q19,code,dev,Comment le champ totalPrice d'un panier est-il calculé dans le schéma GraphQL ?,0.036,122.45,122.486,False,Le champ `totalPrice` d'un panier est calculé dans le schéma GraphQL par le service API Gateway. Il est calculé en additionnant les prix des produits du panier multipliés par leur quantité. Cela est fait dans la méthode `getTotalPrice` du fichier `CartGraphQLController.java` du service API Gateway.,api-gateway/src/main/java/com/ecommerce/api_gateway/controller/CartGraphQLController.java ; api-gateway/src/test/java/com/ecommerce/api_gateway/controller/CartGraphQLControllerTest.java ; api-gateway/src/main/java/com/ecommerce/api_gateway/controller/CartGraphQLController.java ; api-gateway/src/main/resources/graphql/schema.graphqls ; frontend/src/app/services/cart-service.ts,1.0,1.0,1.0
+q21,code,dev,Dans quels cas l'intercepteur HTTP du frontend attache-t-il le token et que fait-il sur une erreur 401 ?,0.023,142.542,142.566,False,"L'intercepteur HTTP du frontend attache le token dans les cas où l'utilisateur est connecté et que la requête n'est pas une requête publique. Il fait une tentative de renouvellement du token sur une erreur 401 (Unauthorized) si l'erreur n'est pas sur une route publique.
+
+Le code qui attache le token se trouve dans l'extrait 1, à la ligne 17. Le code qui gère l'erreur 401 se trouve dans l'extrait 1, à la ligne 33.",frontend/src/app/interceptors/auth-interceptor.ts ; frontend/src/app/services/auth.ts ; frontend/src/app/interceptors/auth-interceptor.ts ; frontend/src/app/interceptors/auth-interceptor.spec.ts ; frontend/src/app/app.config.ts,1.0,1.0,1.0
+q23,code,dev,Quels produits sont chargés au démarrage du product-service et dans quelle condition ?,0.026,262.108,262.134,False,"Les produits suivants sont chargés au démarrage du `product-service` et sont chargés uniquement si la base de données est vide :
+
+```java
+Product product1 = Product.builder()
+        .name(""iPhone 15"")
+        .description(""Latest Apple smartphone"")
+        .price(new BigDecimal(""999.99""))
+        .stockQuantity(100)
+        .category(""Smartphone"")
+        .imageUrl(""/product-images/iphone-15.png"")
+        .build();
+
+Product product2 = Product.builder()
+        .name(""MacBook Pro"")
+        .description(""M3 Pro Chip, 16GB RAM"")
+        .price(new BigDecimal(""1999.99""))
+        .stockQuantity(50)
+        .category(""Laptop"")
+        .imageUrl(""/product-images/macbook-pro-14-m3.png"")
+        .build();
+
+Product product3 = Product.builder()
+        .name(""Sony WH-1000XM5"")
+        .description(""Noise cancelling headphones"")
+        .price(new BigDecimal(""349.99""))
+        .stockQuantity(0)
+        .category(""Audio"")
+        .build();
+
+Product product4 = Product.builder()
+        .name(""Samsung Galaxy S24 Ultra"")
+        .description(""Flagship Android smartphone with AI features and S-Pen"")
+        .price(new BigDecimal(""699.99""))
+        .stockQuantity(75)
+        .category(""Smartphone"")
+        .imageUrl(""/product-images/samsung-galaxy-s24-ultra.png"")
+        .build();
+```
+Ces produits sont chargés dans le fichier `DataLoader.java` du service `product-service`.",product-service/src/main/java/com/ecommerce/product_service/util/DataLoader.java ; frontend/src/app/services/product-service.ts ; docs/DISCUSSIONS.md ; CLAUDE.md ; frontend/e2e/products.spec.ts,1.0,1.0,1.0
+q25,multi_fichiers,dev,Comment le checkout évite-t-il de créer deux commandes pour la même requête ?,0.02,272.283,272.303,False,"Le checkout évite de créer deux commandes pour la même requête en utilisant une clé d'idempotence (`idempotencyKey`). Lorsque la même clé est utilisée dans une nouvelle requête de checkout, le service détecte qu'une commande a déjà été créée pour cette clé et renvoie l'information de la commande existante plutôt que de créer une nouvelle commande. Cela est réalisé dans le service OrderService en vérifiant si une commande existe déjà avec la même clé d'idempotence avant de créer une nouvelle commande.
+
+Dans le code, cela est réalisé dans l'extrait 1 en vérifiant si une commande existe déjà avec la même clé d'idempotence avant de créer une nouvelle commande :
+
+```java
+var existing = orderRepository.findByIdempotencyKey(idempotencyKey);
+if (existing.isPresent()) {
+    Order existingOrder = existing.get();
+    // ...
+}
+```
+
+Dans l'extrait 4, la clé d'idempotence est générée ou récupérée de la session de stockage si elle n'existe pas déjà :
+
+```typescript
+private const IDEMPOTENCY_KEY = 'checkout_idempotency_key';
+const existing = sessionStorage.getItem(IDEMPOTENCY_KEY);
+const idempotencyKey = existing || generateUUID();
+```
+
+Dans l'extrait 5, la clé d'idempotence est envoyée avec la requête de checkout :
+
+```typescript
+this.orderService.checkout(this.userInfo?.id, idempotencyKey)
+```
+
+Dans l'extrait 2, la clé d'idempotence est capturée lors de la première requête de checkout et est réutilisée pour la deuxième requête de checkout pour dédupliquer la commande :
+
+```typescript
+await page.route('**/graphql', async (route, request) => {
+  const body = request.postDataJSON();
+  if (body?.operationName === 'Checkout') {
+    capturedKey ??= body.variables?.input?.idempotencyKey;
+  }
+  await route.continue();
+});
+```",order-service/src/main/java/com/ecommerce/order_service/service/OrderService.java ; frontend/e2e/checkout.spec.ts ; api-gateway/src/main/java/com/ecommerce/api_gateway/client/OrderClient.java ; frontend/src/app/components/checkout/checkout.ts ; frontend/src/app/services/order-service.ts,1.0,0.5,1.0
+q27,multi_fichiers,dev,À quoi sert la dead-letter queue et comment les messages en échec y sont-ils traités ?,0.032,166.478,166.51,False,"La dead-letter queue (DLQ) sert à stocker les messages qui ont échoué après avoir été envoyés à la queue principale et qui ont été rejetés après toutes les tentatives de réessai. Dans ce contexte, les messages en échec sont traités en les envoyant à la DLQ plutôt que de les perdre. Le code fourni montre que les messages sont envoyés à la DLQ par le biais d'un exchange spécifique (deadLetterExchange) et d'un routing key spécifique (DLQ_ROUTING_KEY). Le DeadLetterConsumer est responsable de consommer les messages de la DLQ et de les enregistrer dans les logs pour des raisons d'alerte.",notification-service/src/main/java/com/ecommerce/notification_service/consumer/DeadLetterConsumer.java ; notification-service/src/main/java/com/ecommerce/notification_service/config/RabbitMQConfig.java ; order-service/src/main/java/com/ecommerce/order_service/config/RabbitMQConfig.java ; notification-service/src/main/java/com/ecommerce/notification_service/config/RabbitMQConfig.java ; notification-service/src/test/java/com/ecommerce/notification_service/DlqIntegrationTest.java,1.0,1.0,1.0
+q28,multi_fichiers,dev,Quelles pages du frontend exigent d'être connecté et que se passe-t-il sinon ?,0.016,124.298,124.314,False,"Les pages suivantes du frontend exigent d'être connectées : `dashboard`, `cart`, `checkout`, `order-success`, `orders/:orderId`. Si l'utilisateur n'est pas connecté, il sera redirigé vers la page de connexion (`login`).",frontend/src/app/app.routes.ts ; frontend/src/app/interceptors/auth-interceptor.ts ; frontend/src/app/guards/auth-guard.ts ; frontend/src/app/services/auth.ts ; frontend/src/app/app.ts,1.0,1.0,1.0
+q30,multi_fichiers,dev,Comment le JWT de l'utilisateur est-il propagé de la gateway jusqu'au cart-service pendant un checkout ?,0.018,157.968,157.986,False,"Le JWT de l'utilisateur est propagé de la gateway jusqu'au cart-service pendant un checkout grâce à l'utilisation de l'intercepteur `FeignJwtInterceptor` dans le service order-service (voir Extrait 4). Cet intercepteur ajoute l'autorisation JWT à toutes les demandes Feign sortantes en utilisant la valeur du contexte de sécurité réactive. Dans le contexte de la gateway (voir Extrait 3), le JWT est extrait du contexte de sécurité réactive et est utilisé pour signer les demandes vers le service cart-service (voir les méthodes `addToCart`, `updateQuantity`, `removeItem`, `getCart` dans le fichier `CartClient.java`).",docs/DISCUSSIONS.md ; api-gateway/src/main/java/com/ecommerce/api_gateway/client/CartClient.java ; api-gateway/src/main/java/com/ecommerce/api_gateway/client/CartClient.java ; order-service/src/main/java/com/ecommerce/order_service/config/FeignJwtInterceptor.java ; api-gateway/src/main/java/com/ecommerce/api_gateway/client/OrderClient.java,1.0,0.3333333333333333,0.25
+q32,multi_fichiers,dev,Comment les noms et images de produits d'une commande sont-ils conservés et affichés dans le détail de commande ?,0.023,193.207,193.23,False,"Les noms et images de produits d'une commande sont conservés et affichés dans le détail de commande grâce à plusieurs étapes :
+
+1. Dans le service `OrderService`, lors de la création d'un nouvel `OrderItem`, les noms et images des produits sont définis en utilisant les mappages `nameMap` et `imageUrlMap` (voir Extrait 5).
+
+2. Dans le fichier `order-detail.html` du frontend, les noms et images des produits sont affichés en utilisant les données de l'objet `OrderItem` (voir Extrait 2).
+
+3. Dans le service `OrderGraphQLController`, les noms et images des produits sont récupérés en utilisant les méthodes `getProductName` et `getImageUrl` (voir Extrait 4). Ces méthodes utilisent soit les noms et images directement fournis par l'objet `OrderLineItemResponse`, soit les données de l'API de produit (`productClient`) en cas de besoin.",order-service/src/main/java/com/ecommerce/order_service/service/OrderService.java ; frontend/src/app/components/order-detail/order-detail.html ; order-service/src/main/java/com/ecommerce/order_service/model/OrderItem.java ; api-gateway/src/main/java/com/ecommerce/api_gateway/controller/OrderGraphQLController.java ; order-service/src/main/java/com/ecommerce/order_service/service/OrderService.java,1.0,0.6666666666666666,1.0
+q34,hors_corpus,dev,"Quelle passerelle de paiement (Stripe, PayPal) est intégrée pour encaisser les commandes ?",0.019,125.904,125.923,False,Le contexte fourni ne contient pas cette information.,README.md ; CLAUDE.md ; order-service/src/main/java/com/ecommerce/order_service/controller/OrderController.java ; CLAUDE.md ; order-service/src/main/java/com/ecommerce/order_service/service/OrderService.java,,,
+q36,hors_corpus,dev,Comment les codes promo et les remises sont-ils appliqués au panier ?,0.019,151.559,151.578,False,Le contexte fourni ne contient pas d'information sur l'application des codes promo et remises au panier. Cela n'est pas implémenté dans les extraits fournis.,frontend/src/app/services/cart-service.ts ; cart-service/src/main/java/com/ecommerce/cart_service/service/CartService.java ; order-service/src/main/java/com/ecommerce/order_service/service/OrderService.java ; order-service/src/main/java/com/ecommerce/order_service/service/OrderService.java ; README.md,,,
+q37,hors_corpus,dev,"Quel cache applicatif (@Cacheable, Caffeine) le product-service utilise-t-il pour le catalogue ?",0.019,86.243,86.262,False,Le contexte fourni ne contient pas cette information.,README.md ; CLAUDE.md ; frontend/src/app/services/product-service.ts ; product-service/src/main/java/com/ecommerce/product_service/service/ProductService.java ; docs/DISCUSSIONS.md,,,
+q39,hors_corpus,dev,Comment les SMS de suivi de livraison sont-ils envoyés avec Twilio ?,0.035,148.088,148.122,False,Le contexte fourni ne contient pas d'informations sur l'envoi de SMS de suivi de livraison avec Twilio. Il n'y a pas de mention de Twilio dans les extraits fournis.,notification-service/src/main/java/com/ecommerce/notification_service/service/EmailService.java ; README.md ; CLAUDE.md ; notification-service/src/main/java/com/ecommerce/notification_service/config/RabbitMQConfig.java ; notification-service/src/main/java/com/ecommerce/notification_service/config/OpenTelemetryConfig.java,,,

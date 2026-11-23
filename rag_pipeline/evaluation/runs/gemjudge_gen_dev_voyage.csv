@@ -1,0 +1,4 @@
+id,type,fidelite,exactitude,contexte_suffisant,commentaire
+q01,architecture,1.0,1.0,1.0,"La réponse est parfaitement exacte, concise et entièrement étayée par les extraits fournis."
+q03,architecture,,,,ÉCHEC : ServerError
+q05,architecture,1.0,1.0,1.0,"La réponse donne les commandes Maven exactes conformément au contexte et à la référence, bien qu'elle ajoute des informations superflues sur le frontend."

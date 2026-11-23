@@ -1,0 +1,30 @@
+# Secrets
+.env
+.env.*
+!.env.exemple
+
+# Environnement et caches Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Index et caches générés 
+chroma_db/
+.embedding_cache/
+
+# Corpus : dépôt de dancodingbr
+data/
+.github/modernize/
+
+# Fichiers temporaires et sorties
+*.zip
+chunks_sample.json
+retrieval_report_*.csv
+retrieval_report_*.md
+evaluation/runs/ragas_input_*.json
+
+# IDE et système
+.vscode/
+.idea/
+.DS_Store

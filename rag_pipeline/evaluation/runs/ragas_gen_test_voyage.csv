@@ -1,0 +1,126 @@
+id,type,user_input,response,reference,faithfulness,answer_relevancy,llm_context_precision_with_reference,context_recall
+q02,architecture,"Quels outils sont utilisés pour les métriques, les logs et les traces distribuées ?","Les outils utilisés pour les métriques, les logs et les traces distribuées sont OpenTelemetry, Prometheus, Grafana Alloy, Loki, et Tempo.",Stack LGTM : les métriques sont exposées via /actuator/prometheus et collectées par Prometheus ; les traces partent en OTLP vers Tempo (port 4318) ; les logs JSON sont collectés par Grafana Alloy et envoyés à Loki ; Grafana unifie le tout avec la corrélation par traceId.,0.2,0.8922989709713587,0.9999999999,1.0
+q04,architecture,Comment nginx route-t-il les requêtes /api/ dans le reverse proxy ?,"Les requêtes `/api/` sont routées vers l'alias `api-gateway` sur le port 8080 par le reverse proxy nginx dans le contexte fourni.
+
+```
+location /api/ {
+    proxy_pass http://api-gateway:8080;
+    ...
+}
+```
+(Extrait 4)","Dans la configuration nginx, la location /api/ fait un proxy_pass vers http://api-gateway:8080 en transmettant les en-têtes Host, X-Real-IP et X-Forwarded-For.",1.0,0.790736322783434,0.499999999975,1.0
+q07,architecture,Combien de services Spring Boot compte la plateforme et comment communiquent-ils ?,"La plateforme compte 7 services Spring Boot :
+
+1. api-gateway
+2. service-registry
+3. auth-service
+4. product-service
+5. cart-service
+6. order-service
+7. notification-service
+
+Les services communiquent via des appels HTTP entre eux. L'API Gateway est le point d'entrée unique pour toutes les requêtes clientes et il est responsable de la routage, de la sécurité et des préoccupations transversales. Les autres services communiquent avec l'API Gateway pour obtenir les données nécessaires. Par exemple, le Frontend communique avec l'API Gateway pour accéder aux données du catalogue de produits, l'Auth Service communique avec l'API Gateway pour valider les tokens JWT, etc.","Sept services Spring Boot (api-gateway, service-registry, auth, product, cart, order, notification) qui communiquent via l'API Gateway, avec un registre Eureka et de la messagerie RabbitMQ entre order-service et notification-service ; un frontend Angular les consomme.",0.8125,0.9035354546273989,0.6388888888675925,1.0
+q09,code,Quel est le format de la référence d'une commande ?,"Le format de la référence d'une commande est ""ORD-année-numéro de 7 chiffres"". Cette référence est construite à l'aide de la méthode `buildOrderReference` dans le fichier `OrderService.java`.","buildOrderReference construit « ORD- » suivi de l'année de la commande, d'un tiret et de l'id sur 7 chiffres complétés par des zéros (format %07d), par exemple ORD-2026-0000042.",1.0,0.8647925289436912,0.9999999999,1.0
+q12,code,Comment l'e-mail de confirmation de commande est-il construit et envoyé ?,"L'e-mail de confirmation de commande est construit dans le service `EmailService` du microservice `notification-service`. Il est envoyé à l'aide de la méthode `sendOrderConfirmation` de ce même service, qui est appelée à partir du `OrderConsumer` du microservice `notification-service` lorsqu'un événement `OrderPlacedEvent` est reçu.
+
+Le contexte fourni ne contient pas d'information sur la façon dont l'événement `OrderPlacedEvent` est publié et reçu. Cependant, il est possible de le faire à partir du `OrderProducer` du microservice `order-service` en utilisant la méthode `sendOrderConfirmation`.
+
+Le code pertinent pour construire l'e-mail de confirmation de commande se trouve dans l'extrait 1, dans le fichier `EmailService.java` du microservice `notification-service`. Le code pour envoyer l'e-mail se trouve dans l'extrait 1 et l'extrait 2, dans les fichiers `EmailService.java` et `OrderConsumer.java` du microservice `notification-service`.","EmailService.sendOrderConfirmation crée un MimeMessage avec l'expéditeur spring.mail.username (défaut no-reply@ecommerce.com), le sujet « Order Confirmation - » + référence, et un corps HTML formaté contenant la référence ; une MessagingException est transformée en RuntimeException.",0.8571428571428571,0.857220595090615,0.9999999999,1.0
+q15,code,Que se passe-t-il quand on ajoute au panier un produit déjà présent ?,Le contexte fourni ne contient pas cette information. Il est nécessaire de consulter les méthodes `addToCart` de `CartService` dans les services `cart-service` et `frontend`.,"CartService.addToCart vérifie d'abord le produit auprès du product-service (WebClient avec circuit breaker : 404 si inconnu, 503 si indisponible), puis, si l'article existe déjà dans le panier, ajoute la quantité à la quantité existante ; sinon il crée un nouveau CartItem. Le panier est ensuite sauvegardé.",0.0,0.0,0.9999999999,1.0
+q17,code,Quelles limites de débit la gateway applique-t-elle et selon quelle clé ?,"La gateway applique deux limites de débit différentes :
+
+1. Pour les routes autres que celles concernant l'authentification, la limite est de 20 requêtes par minute (20/min) avec une capacité de burst de 40 requêtes (40). Cette limite est appliquée avec la clé résolue par la méthode `keyResolver()` dans le fichier `RateLimiterConfig.java`.
+
+2. Pour les routes concernant l'authentification (`/auth/**`), la limite est de 3 requêtes par minute (3/min) avec une capacité de burst de 5 requêtes (5). Cette limite est appliquée avec la méthode `authRateLimiter()` dans le fichier `RateLimiterConfig.java`.","Deux RedisRateLimiter : authRateLimiter (3, 5) strict pour /auth/** et standardRateLimiter (20, 40) pour les autres routes. La clé de limitation est le nom du principal authentifié (sujet JWT), sinon l'adresse IP distante, sinon « unknown ».",1.0,0.877803780282674,0.9999999999,1.0
+q20,code,Que renvoie la requête GraphQL userDashboard ?,"La requête GraphQL `userDashboard` renvoie un objet Map contenant deux clés : `user` et `featuredProducts`. La clé `user` renvoie un objet contenant trois clés : `id`, `username` et `email`. La clé `featuredProducts` renvoie une liste de deux objets, chacun contenant les clés `id`, `name` et `price`. Le contexte fourni ne contient pas d'information sur les valeurs exactes des clés `id`, `username`, `email`, `name` et `price`.",DashboardGraphQLController.userDashboard renvoie des données codées en dur : un utilisateur « testuser » (id user-123) et deux produits (Laptop à 999.99 et Mouse à 25.50) ; un commentaire indique qu'elle appellera plus tard l'Auth-Service et le Product-Service.,0.8,0.865917794242137,0.9999999999,1.0
+q22,code,Comment le frontend génère-t-il et conserve-t-il la clé d'idempotence du checkout ?,"Le frontend génère une clé d'idempotence du checkout en utilisant la fonction `generateUUID()` définie dans le fichier `frontend/src/app/components/checkout/checkout.ts`. Cette fonction génère une chaîne de caractères de 36 caractères, composée de huit groupes de quatre caractères séparés par des tirets, qui correspond à une chaîne de caractères UUID.
+
+Le frontend conserve la clé d'idempotence du checkout en utilisant la méthode `sessionStorage.setItem()` de JavaScript. La clé est stockée dans la session de l'utilisateur avec la clé `IDEMPOTENCY_KEY`. Si la clé n'existe pas déjà dans la session, elle est générée et stockée pour la première fois.","checkout.ts stocke la clé dans sessionStorage sous « checkout_idempotency_key » : il réutilise la clé existante, sinon génère un UUID (crypto.randomUUID, avec repli UUID v4 manuel) ; la clé est supprimée après un checkout réussi.",0.8571428571428571,0.8889978995663599,0.249999999975,1.0
+q24,code,Comment les circuit breakers et les timeouts sont-ils configurés dans la gateway ?,"Les circuit breakers et les timeouts sont configurés dans la gateway grâce à Resilience4j.
+
+Pour les circuit breakers, la configuration par défaut est définie dans le fichier `application.yaml` :
+
+```yaml
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+    instances:
+      product-service:
+        base-config: default
+      cart-service:
+        base-config: default
+      order-service:
+        base-config: default
+      auth-service:
+        base-config: default
+```
+
+Cette configuration définit les paramètres par défaut pour tous les services. Les instances spécifiques peuvent surécrire ces paramètres. Par exemple, pour l'ordre de service, le timeout est surécrit à 30s.
+
+Pour les timeouts, la configuration est également définie dans le fichier `application.yaml` :
+
+```yaml
+resilience4j:
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 10s
+    instances:
+      product-service:
+        base-config: default
+      cart-service:
+        base-config: default
+      order-service:
+        timeout-duration: 30s
+      auth-service:
+        base-config: default
+```
+
+Cette configuration définit les paramètres par défaut pour tous les services. Les instances spécifiques peuvent surécrire ces paramètres. Par exemple, pour l'ordre de service, le timeout est surécrit à 30s.
+
+Les circuit breakers et les timeouts sont utilisés dans les clients de services, comme `AuthClient` et `OrderClient`, pour gérer les échecs et les temps d'attente des appels aux services.","Resilience4j : configuration par défaut avec sliding-window-size 10, failure-rate-threshold 50, wait-duration-in-open-state 10s et 3 appels autorisés en half-open ; des instances pour product, cart, order et auth service. Le timelimiter est de 10 s par défaut, mais de 30 s pour order-service.",1.0,0.9120716259684173,0.19999999998,1.0
+q26,multi_fichiers,"Quels noms d'exchange, de queue et de routing keys RabbitMQ sont utilisés entre order-service et notification-service ?","Les noms d'exchange, de queue et de routing keys RabbitMQ utilisés entre order-service et notification-service sont les suivants :
+
+- Exchange order-service : `order.exchange`
+- Exchange notification-service : `order.exchange`
+- Queue order-service : `order.placed.queue`
+- Queue notification-service : `order.placed.queue`
+- Routing key : `order.placed`","L'exchange direct « order.exchange », la queue durable « order.placed.queue » et la routing key « order.placed ». Pour les messages rejetés : exchange DLX « order.dlx », routing key « order.dlq » et queue « order.placed.dlq » (déclarée côté notification-service). Les déclarations de la queue doivent être identiques des deux côtés pour éviter PRECONDITION_FAILED.",1.0,0.9094176112906442,0.99999999995,1.0
+q29,multi_fichiers,"Décris le parcours complet d'un checkout, de la mutation GraphQL jusqu'à l'envoi de l'e-mail.","Le parcours complet d'un checkout, de la mutation GraphQL jusqu'à l'envoi de l'e-mail, se déroule comme suit :
+
+1. L'utilisateur sélectionne un produit et ajoute-le à son panier dans le frontend.
+
+2. L'utilisateur navigue vers la page de paiement en cliquant sur le bouton ""Checkout"".
+
+3. Dans le frontend, la fonction `placeOrder()` est appelée. Elle vérifie si une clé d'idempotence existe déjà dans la session en stockage. Si oui, elle utilise cette clé, sinon elle en génère une nouvelle.
+
+4. La fonction `placeOrder()` appelle le service `OrderService` en lui passant l'ID de l'utilisateur et la clé d'idempotence.
+
+5. Le service `OrderService` envoie une requête GraphQL `checkout` à l'API GraphQL via Apollo Client.
+
+6. L'API GraphQL transmet la requête à l'API Order Service.
+
+7. L'API Order Service récupère les produits du panier via le service Cart Service, les traite et les transforme en ordre.
+
+8. L'API Order Service enregistre l'ordre dans la base de données.
+
+9. L'API Order Service renvoie l'ordre en tant que réponse à la requête GraphQL `checkout`.
+
+10. Le service `OrderService` de l'API GraphQL renvoie la réponse à la requête GraphQL `checkout` au frontend.
+
+11. Le frontend reçoit la réponse de la requête GraphQL `checkout` et navigue vers la page ""Order Success"".
+
+12. L'envoi de l'e-mail est effectué par un service de messagerie externe qui n'est pas représenté dans le contexte fourni. Il est probable que ce service soit appelé à partir de l'API Order Service ou de l'API GraphQL, mais cela n'est pas explicitement défini.","La mutation GraphQL checkout (OrderGraphQLController) appelle l'order-service ; OrderService.placeOrder lit le panier, récupère les prix, enregistre la commande en statut PENDING, vide le panier puis publie un OrderPlacedEvent via OrderProducer sur RabbitMQ ; OrderConsumer du notification-service consomme l'événement et appelle EmailService pour envoyer l'e-mail de confirmation.",0.8421052631578947,0.8963373488381766,0.0,0.3333333333333333
+q31,multi_fichiers,Que se passe-t-il pendant un checkout si le cart-service ou le product-service est indisponible ?,"Le contexte fourni ne contient pas cette information complète.
+
+En effet, lors d'un checkout, le service `order-service` tente de récupérer le panier du client en appelant la méthode `getCartByUserId` de la classe `CartClientFallback` qui est une classe de fallback pour le client Cart. Si le service `cart-service` est indisponible, cette méthode lance une exception avec le statut HTTP `SERVICE_UNAVAILABLE` et un message d'erreur indiquant que `cart-service` est indisponible.
+
+De plus, dans la méthode `addToCart` du service `cart-service`, il est possible de faire appel au service `product-service` pour récupérer les détails du produit à ajouter au panier. Si ce service est indisponible, la méthode lance également une exception avec le statut HTTP `SERVICE_UNAVAILABLE`.
+
+Cependant, il n'est pas clair dans le contexte fourni comment ces exceptions sont gérées lors d'un checkout. Il est possible que le service `order-service` soit conçu pour gérer ces exceptions et tenter de récupérer les données nécessaires à nouveau, ou qu'il renvoie une erreur à l'utilisateur final.",Les clients Feign de l'order-service ont des fallbacks (circuit breaker Feign activé) : CartClientFallback.getCartByUserId et ProductClientFallback.getProductsByIds lèvent une ResponseStatusException 503 (« cart-service is unavailable » / « product-service is unavailable ») ; seul clearCart se contente d'un log warn.,0.6,0.0,0.9999999999,0.0
+q33,multi_fichiers,"Quels codes HTTP l'order-service renvoie-t-il quand une commande est introuvable, appartient à un autre utilisateur ou quand le panier est vide ?","L'order-service renvoie un code HTTP 404 lorsque la commande est introuvable, un code HTTP 403 lorsque la commande appartient à un autre utilisateur, et un code HTTP 422 lorsque le panier est vide.","OrderNotFoundException donne un 404, OrderAccessDeniedException (commande d'un autre utilisateur, vérifiée dans getOrderDetail) donne un 403, et BusinessException (par exemple « Cart is empty for user ») donne un 422 ; ils sont traités dans GlobalExceptionHandler.",0.6666666666666666,0.8315044571643595,0.4499999999775,1.0
