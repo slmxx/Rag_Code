@@ -8,11 +8,12 @@
 
 ## 🎬 Démo
 
-<!-- TODO : GIF ou vidéo courte de l'interface Streamlit -->
+>  Démo de l'interface Streamlit : questions de code, multi-fichiers, architecture et hors corpus (refus).
+> *Le temps d'attente de Mistral 7B, qui tourne en local sur CPU, est raccourci au montage.*
 
-_(démo à venir)_
+https://github.com/user-attachments/assets/6f3b7dc1-fb70-417f-b9c3-d4e45051cc3b
 
----
+
 
 ## ✨ Ce que fait le projet:
 
